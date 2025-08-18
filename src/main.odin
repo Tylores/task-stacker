@@ -6,63 +6,37 @@ import rl "vendor:raylib"
 // Window constants base on pixel game 16:9 ratio 
 SCREEN_WIDTH :: 640
 SCREEN_HEIGHT :: 360
+CARD_WIDTH :: 25
+CARD_HEIGHT :: 35
 TARGET_FPS :: 60
 
-
-WindowState :: struct {
-	position:      rl.Vector2,
-	is_dragging:   bool,
-	last_position: rl.Vector2,
-	window_center: rl.Vector2,
-}
-
 main :: proc() {
-
+	rl.SetConfigFlags({.WINDOW_UNDECORATED})
 	rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Drag Me Window")
 	defer rl.CloseWindow()
 
-	rl.SetWindowState({.WINDOW_UNDECORATED})
 	rl.SetTargetFPS(TARGET_FPS)
+	rl.SetWindowPosition(rl.GetMonitorWidth(0) / 2, rl.GetMonitorHeight(0) / 2)
 
-	state := WindowState {
-		position = {
-			f32(rl.GetMonitorWidth(0) / 2 - SCREEN_WIDTH / 2),
-			f32(rl.GetMonitorHeight(0) / 2 - SCREEN_HEIGHT / 2),
-		},
-	}
-	state.last_position = state.position
-	state.window_center = {f32(SCREEN_WIDTH) / 2, f32(SCREEN_HEIGHT) / 2}
-
-	rl.SetWindowPosition(i32(state.position.x), i32(state.position.y))
-
+	world: World
+	deck := get_entity(&world, "deck")
+	world.color[deck] = rl.BLUE
+	world.frame_box[deck] = rl.Rectangle({100, 100, CARD_WIDTH, CARD_HEIGHT})
+	done := get_entity(&world, "done")
+	world.color[done] = rl.RED
+	world.frame_box[done] = rl.Rectangle({200, 100, CARD_WIDTH, CARD_HEIGHT})
+	card := get_entity(&world, "card")
+	world.color[card] = rl.PURPLE
+	world.frame_box[card] = rl.Rectangle({300, 100, CARD_WIDTH, CARD_HEIGHT})
+	waiting := get_entity(&world, "waiting")
+	world.color[waiting] = rl.GRAY
+	world.frame_box[waiting] = rl.Rectangle({0, SCREEN_HEIGHT - 100, SCREEN_WIDTH, 100})
 
 	for !rl.WindowShouldClose() {
-		if rl.IsMouseButtonPressed(.LEFT) {
-			state.is_dragging = true
-			state.last_position = state.position
-		}
-
-		if state.is_dragging {
-			mouse_pos := rl.GetMousePosition()
-
-			state.position = {f32(mouse_pos.x), f32(mouse_pos.y)}
-
-			// Recenter the mouse
-			if !rl.IsMouseButtonDown(.LEFT) {
-				state.is_dragging = false
-			}
-		}
-
-		// Rendering
 		rl.BeginDrawing()
 		defer rl.EndDrawing()
 
-		rl.ClearBackground(rl.BLANK)
-		new_x := i32(state.position.x)
-		new_y := i32(state.position.y)
-		rl.DrawRectangle(0, SCREEN_HEIGHT - 70, SCREEN_WIDTH, 70, rl.GRAY)
-		rl.DrawRectangle(0, 0, 50, SCREEN_HEIGHT, rl.GREEN)
-		rl.DrawRectangle(SCREEN_WIDTH - 50, 0, 50, SCREEN_HEIGHT, rl.RED)
-		rl.DrawRectangle(new_x, new_y, 25, 35, rl.PURPLE)
+		rl.ClearBackground(rl.BLACK)
+		render(&world)
 	}
 }
