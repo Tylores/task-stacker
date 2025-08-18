@@ -6,8 +6,6 @@ import rl "vendor:raylib"
 // Window constants base on pixel game 16:9 ratio 
 SCREEN_WIDTH :: 640
 SCREEN_HEIGHT :: 360
-CARD_WIDTH :: 25
-CARD_HEIGHT :: 35
 TARGET_FPS :: 60
 
 main :: proc() {
@@ -37,6 +35,7 @@ main :: proc() {
 		defer rl.EndDrawing()
 
 		rl.ClearBackground(rl.BLACK)
+		handle_input(&world)
 		render(&world)
 	}
 }
